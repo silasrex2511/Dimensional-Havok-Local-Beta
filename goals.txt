@@ -1,0 +1,16 @@
+GOALS TO BE COMPLETED:          ||    ARTISTS GOALS TO BE DONE
+-skill shots                    ||    -armors and bodies
+  *using drawLine function      ||      *template bodies and animations
+-class assignments              ||      *armors for each race>class
+  *abilities                    ||    -ability animation
+  *ability functionality        ||      *arrows
+-targeting                      ||      *sword slices
+  *mouse-click movement         ||      *blasts
+-mini-map                       ||    -collectables
+  *rescale of entire map        ||      *animations
+  *accurate scrolling           ||      *items
+-realtime play                  ||      *mana/hp suppliment
+  *make better HavokServer      ||
+-online                         ||
+  *launch game beta             ||
+  *launch game                  ||

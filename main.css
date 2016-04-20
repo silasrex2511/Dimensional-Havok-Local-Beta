@@ -1,0 +1,27 @@
+body{
+    width: 1000px;
+    border: 3px solid black;
+    background: gray;
+    margin-left: auto;
+    margin-right: auto;
+}
+nav>ul>li{
+    display: inline;
+    text-decoration: none;
+    margin-left: 80px;
+    font-family: arial;
+    font-size: 20px;
+    color: black;
+}
+header{
+    text-align: center;
+    background: #222222;
+    color:00ffff;
+}
+header>h3{
+    text-align: right;
+}
+section{
+    padding:5px;
+
+}
