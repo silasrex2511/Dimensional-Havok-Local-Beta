@@ -18,7 +18,7 @@ var lvl = 1;
 
 
 var copy = new imageData(0,0,64,64,"./res/chars/alfred.png");
-var enemy = new enemy(copy,200,20,2);
+var enemy = new enemy(copy,500,200,5,2,.7);
 var enemies = [enemy];
 player.enemies = enemies;
 var path = new line(100,100,100,100);
@@ -36,7 +36,7 @@ var textures = [
 ];
 
 var world = new map(textures,introMap,50,30,64,64);
-var objects = [player.enemies[0].image];
+var objects = [player.enemies[0].image,targetClick];
 
 var havok = new game(player.image,world,objects,lvl);
 
@@ -58,13 +58,13 @@ function render(){
     imageShow(abilityLayout);
     abilityLayout();
     update();
-    statusBars(player);
+    player.statDisplay();
     // colorChange(player,0,0,0,1,255,255,255);
 }
 
 function update(){
     //>>> quick test
-    player.provoke();
+    player.regulate();
     //<<< quick test
     var moving = moveTo(player.image,mouseX,mouseY,speed,path,havok);
     mouseX = moving.lineXF;

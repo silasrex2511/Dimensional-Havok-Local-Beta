@@ -1,6 +1,7 @@
 var clickedAt = new point();
 var targetClick = new point();
 var c = document.getElementById('theCanvas');
+var activeArea = new rectMngr(0,0,c.width,c.height);
 c.addEventListener('contextmenu', function(evt) {
     evt.preventDefault();
     var rect = c.getBoundingClientRect();
