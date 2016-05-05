@@ -1,3 +1,4 @@
+
 //this will handle everything dealing with the player
 
 var player = new character("./res/chars/alfred.png", mage);
@@ -28,14 +29,15 @@ function character(img, classType){
     this.totalMana = 100;
     this.manaLow = 0;
     this.lvl = 1;
-    atkDmg = 60;
-    atkSpeed = .65;
+    this.atkDmg = 60;
+    this.atkSpeed = .65;
+    this.range = 300;
     this.target;
     this.a0 = 0;
     this.image = new imageData(400-32,300-32,64,64,img);
     this.manaRegenTicker = new ticker(this.manaLow, 60 * 2.5, 3000);
     this.hpRegenTicker = new ticker(this.hpLow, 60 * 2.5, 3000);
-    this.autoAtkTicker = new ticker(this.a0, 60 * atkSpeed, 3000);
+    this.autoAtkTicker = new ticker(this.a0, 60 * this.atkSpeed, 3000);
     this.enemies = [];
 
     this.statDisplay = function(){
@@ -66,14 +68,14 @@ function character(img, classType){
     this.rightClick = function(){
         var moving = moveTo(player.image,playerRightClick.x,playerRightClick.y,speed,path,havok);
         for(var i = 0; i < this.enemies.length; i++){
-            if(collisionCheck(this.enemies[i],playerRightClick)){
+            if(collisionCheck(this.enemies[i].image,playerRightClick)){
                 if(path.lineLength < this.range){
-                    
                     playerRightClick.x = this.x;
                     playerRightClick.y = this.y;
+                    this.autoAttack();
                 }else{
-                    playerRightClick.x = moving.lineXF;
-                    playerRightClick.y = moving.lineYF;
+                    playerRightClick.x = this.enemies[i].image.x+this.enemies[i].image.width/2;
+                    playerRightClick.y = this.enemies[i].image.y+this.enemies[i].image.height/2;
                 }
             }else{
                 playerRightClick.x = moving.lineXF;
@@ -116,6 +118,7 @@ function character(img, classType){
                 targetClick.y = this.enemies[i].image.y + this.enemies[i].image.height/2;
                 if(collisionCheck(targetClick,activeArea)){
                     this.enemies[i].statDisplay();
+                    this.target = this.enemies[i];
                 }
             }
             else if(!collisionCheck(targetClick,this.enemies[i].image)){
