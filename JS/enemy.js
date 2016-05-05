@@ -39,9 +39,9 @@ function enemy(img,health,range,atkDmg,speed,atkSpd){
         }
     }
     this.statDisplay = function(){
-        var underlay = new rectMngr(c.width-305,5,300,100,"rgba(50,50,50,.7)","underlay");
-        var hpBarMask = new rectMngr(c.width-300,10,200,15,"black","hpMask");
-        var hpBar = new rectMngr(c.width-300,10,200 * (this.hp / this.totalHp),15,"red","hpBar");
+        var underlay = new rectMngr(c.width-485,5,300,100,"rgba(50,50,50,.7)","underlay");
+        var hpBarMask = new rectMngr(c.width-480,10,200,15,"black","hpMask");
+        var hpBar = new rectMngr(c.width-480,10,200 * (this.hp / this.totalHp),15,"red","hpBar");
         var bars = [underlay, hpBarMask, hpBar];
         itemsShow(bars);
         drawString(this.hp, "12px Tahoma", c.width-300, 22, "white");

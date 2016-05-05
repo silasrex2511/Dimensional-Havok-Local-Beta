@@ -1,4 +1,5 @@
 //this will handle everything dealing with the player
+
 var player = new character("./res/chars/alfred.png", mage);
 function character(img, classType){
     this.totalHp = 100 + classType.hp * classType.rank;
@@ -35,6 +36,7 @@ function character(img, classType){
         this.provoke();
         this.regen();
         this.targetSelect();
+        this.displayMiniMap();
     };
     this.regen = function(){
         if(this.mana < this.totalMana){
@@ -56,10 +58,8 @@ function character(img, classType){
     }
     this.provoke = function(){
         for(var i = 0; i < this.enemies.length; i++){
-          // console.log(rangeCheck(this.image.x,this.enemies[i].image.x,this.enemies[i].range));
             if(rangeCheck(this.enemies[i].image.x, this.image.x, this.enemies[i].range) &&
                rangeCheck(this.enemies[i].image.y, this.image.y, this.enemies[i].range)){
-                  // this.enemies[i].inBattle = true;
                   this.enemies[i].target = this;
                   this.enemies[i].chase();
                   console.log("provoked");
@@ -71,17 +71,35 @@ function character(img, classType){
             if(collisionCheck(targetClick,this.enemies[i].image)){
                 targetClick.x = this.enemies[i].image.x + this.enemies[i].image.width/2;
                 targetClick.y = this.enemies[i].image.y + this.enemies[i].image.height/2;
-                // console.log(targetClick)
                 if(collisionCheck(targetClick,activeArea)){
-                    // targetClick.x = null;
-                    // targetClick.y = null;
                     this.enemies[i].statDisplay();
                 }
             }
+            else if(!collisionCheck(targetClick,this.enemies[i].image)){
+                targetClick.x = -300;
+                targetClick.y = -300;
+            }
         }
-
-        
-        // console.log(targetClick);
+    }
+    this.displayMiniMap = function(){
+        var miniMapDisplay;
+        var underlay = new rectMngr(c.width-150,0,150,150,"rgba(40,40,40,.5)","map");
+        var playerIndicator = new circleMngr(c.width-75,75,2,"rgba(0,255,0,.5)","rgba(0,255,0,.5)",2,"playerDot");
+        miniMapDisplay = [underlay,playerIndicator]
+        for(var i = 0; i < this.enemies.length; i++){
+            var nme = this.enemies[i].image;
+            var x = (nme.x - this.image.x) / 10 + playerIndicator.x;
+            var y = (nme.y - this.image.y) / 10 + playerIndicator.y;
+            miniMapDisplay[miniMapDisplay.length] = new rectMngr(x,y,4,4,"rgba(255,0,0,.6)","enemy");
+        }
+        for(var i = 0; i < miniMapDisplay.length; i++){
+            if(collisionCheck(miniMapDisplay[i],underlay)){
+                miniMapDisplay[i].visible = true;
+            }else{
+                miniMapDisplay[i].visible = false;
+            }
+        }
+        itemsShow(miniMapDisplay);
     }
 
 }
