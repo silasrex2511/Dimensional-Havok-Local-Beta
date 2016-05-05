@@ -1,25 +1,7 @@
-var clickedAt = new point();
-var targetClick = new point();
+
 var c = document.getElementById('theCanvas');
 var activeArea = new rectMngr(0,0,c.width,c.height);
-c.addEventListener('contextmenu', function(evt) {
-    evt.preventDefault();
-    var rect = c.getBoundingClientRect();
-    var y = evt.clientY - rect.top;
-    var x = evt.clientX - rect.left;
-    // return false;
-    clickedAt.x = x;
-    clickedAt.y = y;
-});
-c.addEventListener('click', function(evt) {
-    evt.preventDefault();
-    var rect = c.getBoundingClientRect();
-    var y = evt.clientY - rect.top;
-    var x = evt.clientX - rect.left;
-    // return false;
-    targetClick.x = x;
-    targetClick.y = y;
-});
+
 function statusBars(player){
     this.underlay = new rectMngr(5,5,300,100,"rgba(50,50,50,.7)","underlay");
     this.hpBarMask = new rectMngr(100,10,200,15,"black","hpMask");

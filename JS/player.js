@@ -1,6 +1,25 @@
 //this will handle everything dealing with the player
 
 var player = new character("./res/chars/alfred.png", mage);
+var playerRightClick = new point();
+var targetClick = new point();
+//gets x and y of mouse click
+c.addEventListener('contextmenu', function(evt) {
+    evt.preventDefault();
+    var rect = c.getBoundingClientRect();
+    playerRightClick.y = evt.clientY - rect.top;
+    playerRightClick.x = evt.clientX - rect.left;
+    // return false;
+});
+c.addEventListener('click', function(evt) {
+    evt.preventDefault();
+    var rect = c.getBoundingClientRect();
+    var y = evt.clientY - rect.top;
+    var x = evt.clientX - rect.left;
+    // return false;
+    targetClick.x = x;
+    targetClick.y = y;
+});
 function character(img, classType){
     this.totalHp = 100 + classType.hp * classType.rank;
     this.hp = this.totalHp;
@@ -9,9 +28,14 @@ function character(img, classType){
     this.totalMana = 100;
     this.manaLow = 0;
     this.lvl = 1;
+    atkDmg = 60;
+    atkSpeed = .65;
+    this.target;
+    this.a0 = 0;
     this.image = new imageData(400-32,300-32,64,64,img);
     this.manaRegenTicker = new ticker(this.manaLow, 60 * 2.5, 3000);
     this.hpRegenTicker = new ticker(this.hpLow, 60 * 2.5, 3000);
+    this.autoAtkTicker = new ticker(this.a0, 60 * atkSpeed, 3000);
     this.enemies = [];
 
     this.statDisplay = function(){
@@ -37,7 +61,26 @@ function character(img, classType){
         this.regen();
         this.targetSelect();
         this.displayMiniMap();
+        this.rightClick();
     };
+    this.rightClick = function(){
+        var moving = moveTo(player.image,playerRightClick.x,playerRightClick.y,speed,path,havok);
+        for(var i = 0; i < this.enemies.length; i++){
+            if(collisionCheck(this.enemies[i],playerRightClick)){
+                if(path.lineLength < this.range){
+                    
+                    playerRightClick.x = this.x;
+                    playerRightClick.y = this.y;
+                }else{
+                    playerRightClick.x = moving.lineXF;
+                    playerRightClick.y = moving.lineYF;
+                }
+            }else{
+                playerRightClick.x = moving.lineXF;
+                playerRightClick.y = moving.lineYF;
+            }
+        }
+    }
     this.regen = function(){
         if(this.mana < this.totalMana){
             run(this.manaRegenTicker);
@@ -101,5 +144,10 @@ function character(img, classType){
         }
         itemsShow(miniMapDisplay);
     }
-
+    this.autoAttack = function(){
+        run(autoAtkTicker);
+        if(autoAtkTicker){
+            this.target.hp -= this.atkDmg;
+        }
+    }
 }

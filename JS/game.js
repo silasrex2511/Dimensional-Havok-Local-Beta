@@ -2,16 +2,6 @@ var c = document.getElementById('theCanvas');
 var ctx = c.getContext('2d');
 
 var frame = 0;
-var mouseX, mouseY;
-//gets x and y of mouse click
-c.addEventListener('contextmenu', function(evt) {
-    evt.preventDefault();
-    var rect = c.getBoundingClientRect();
-    mouseY = evt.clientY - rect.top;
-    mouseX = evt.clientX - rect.left;
-    console.log('Mouse position: ' + mouseX + ',' + mouseY);
-    // return false;
-});
 
 var lvl = 1;
 
@@ -66,9 +56,7 @@ function update(){
     //>>> quick test
     player.regulate();
     //<<< quick test
-    var moving = moveTo(player.image,mouseX,mouseY,speed,path,havok);
-    mouseX = moving.lineXF;
-    mouseY = moving.lineYF;
+    
     worldCol(player.image,"wall");
 
 }
