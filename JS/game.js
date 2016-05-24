@@ -11,7 +11,6 @@ var copy = new imageData(0,0,64,64,"./res/chars/alfred.png");
 var enemy = new enemy(copy,500,200,5,2,.7);
 var enemies = [enemy];
 player.enemies = enemies;
-var path = new line(100,100,100,100);
 var speed = 4;
 
 var textures = [
@@ -40,7 +39,7 @@ function render(){
     ctx.fillRect(0,0,c.width,c.height);
 
     mapShow(world,1);
-    drawLine(path,2,"red");
+    // drawLine(path,2,"red");
 
     itemsShow(objects);
     imageShow(player.enemies[0].image);
@@ -55,8 +54,9 @@ function render(){
 function update(){
     //>>> quick test
     player.regulate();
+    enemy.regulate();
     //<<< quick test
-    
+
     worldCol(player.image,"wall");
 
 }
