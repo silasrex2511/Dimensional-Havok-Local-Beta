@@ -1,19 +1,6 @@
 
 var c = document.getElementById('theCanvas');
 var activeArea = new rectMngr(0,0,c.width,c.height);
-
-function statusBars(player){
-    this.underlay = new rectMngr(5,5,300,100,"rgba(50,50,50,.7)","underlay");
-    this.hpBarMask = new rectMngr(100,10,200,15,"black","hpMask");
-    this.hpBar = new rectMngr(100,10,200 * (player.hp / player.totalHp),15,"red","hpBar");
-    this.mpBarMask = new rectMngr(100,30,200,15,"black","mpMask");
-    this.mpBar = new rectMngr(100,30,200 * (player.mana / player.totalMana),15,"blue","mpBar");
-    this.bars = [this.underlay, this.hpBarMask, this.hpBar, this.mpBarMask, this.mpBar];
-    itemsShow(this.bars);
-    drawString(player.hp, "12px Tahoma", 100, 22, "white");
-    drawString(player.mana, "12px Tahoma", 100, 42, "white");
-    // drawString(player.lvl);
-}
 function abilityLayout(){
     var layoutMask = new rectMngr(c.width/2 - 70 * 4 / 2 , 520, 70 * 4, 70, "brown");
     abilities = [];

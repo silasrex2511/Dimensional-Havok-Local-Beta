@@ -25,13 +25,16 @@ c.addEventListener('click', function(evt) {
     targetClick.y = y;
 });
 function character(img, classType){
-    this.totalHp = 100 + classType.hp * classType.rank;
+    this.totalHp = 100;
     this.hp = this.totalHp;
+    this.hpRegen = 1;
     this.hpLow = 0;
-    this.mana = 100;
     this.totalMana = 100;
+    this.mana = this.totalMana;
+    this.manaRegen = 1;
     this.manaLow = 0;
     this.lvl = 1;
+    this.xp = 0;
     this.atkDmg = 60;
     this.atkSpeed = .65;
     this.range = 300;
@@ -39,10 +42,11 @@ function character(img, classType){
     this.inBattle = false;
     this.a0 = 0;
     this.image = new imageData(400-32,300-32,64,64,img);
-    this.manaRegenTicker = new ticker(this.manaLow, 60 * 2.5, 3000);
-    this.hpRegenTicker = new ticker(this.hpLow, 60 * 2.5, 3000);
-    this.autoAtkTicker = new ticker(this.a0, 60 * this.atkSpeed, 3000);
+    this.manaRegenTicker = new ticker(this.manaLow, 30, 3000);
+    this.hpRegenTicker = new ticker(this.hpLow, 30, 3000);
+    this.autoAtkTicker = new ticker(this.a0, Math.round(60/this.atkSpeed), 3000);
     this.enemies = [];
+    this.nullTarget = new enemy(new rectMngr(0,0,0,0,"transparent"),0,0,0,0,0,0,0)
 //Shows Status
     this.statDisplay = function(){
         var underlay = new rectMngr(5,5,300,100,"rgba(50,50,50,.7)","underlay");
@@ -50,19 +54,27 @@ function character(img, classType){
         var hpBar = new rectMngr(100,10,200 * (this.hp / this.totalHp),15,"red","hpBar");
         var mpBarMask = new rectMngr(100,30,200,15,"black","mpMask");
         var mpBar = new rectMngr(100,30,200 * (this.mana / this.totalMana),15,"blue","mpBar");
-        var bars = [underlay, hpBarMask, hpBar, mpBarMask, mpBar];
+        var xpBarMask = new rectMngr(c.width/2 - 70 * 4 / 2 , 590, 70 * 4, 10, "gray");
+        var xpBar = new rectMngr(260,590,280 * (this.xp / (20 * Math.pow(1.25, this.lvl))),8,"green","xpBar");
+        var bars = [underlay, hpBarMask, hpBar, mpBarMask, mpBar, xpBarMask, xpBar];
         itemsShow(bars);
-        drawString(this.hp, "12px Tahoma", 100, 22, "white");
-        drawString(this.mana, "12px Tahoma", 100, 42, "white");
-        // drawString(player.lvl);
+        drawString(Math.round(this.hp), "12px Tahoma", 100, 22, "white");
+        drawString(Math.round(this.mana), "12px Tahoma", 100, 42, "white");
+        drawString("XP: " + player.xp + "/" + Math.round(20 * Math.pow(1.25, this.lvl)), "12px Tahoma", 100, 57, "white");
     }
 //Runs Necessary functions in game.js in update()
     this.regulate = function(){
         if(this.mana < 0){
             this.mana = 0;
         }
+        if(this.mana > this.totalMana){
+            this.mana = this.totalMana;
+        }
         if(this.hp < 0){
           this.hp = 0;
+        }
+        if(this.hp > this.totalHp){
+            this.hp = this.totalHp;
         }
         this.provoke();
         this.regen();
@@ -72,6 +84,8 @@ function character(img, classType){
         if(this.inBattle){
             this.autoAttack();
         }
+        this.lootCollect();
+        this.lvlMngr();
     };
 //manages what the right click does
 //auto attack, movement, selects target
@@ -105,13 +119,13 @@ function character(img, classType){
         if(this.mana < this.totalMana){
             run(this.manaRegenTicker);
             if(this.manaRegenTicker.tick){
-                this.mana += 5;
+                this.mana += this.manaRegen;
             }
         }
         if(this.hp < this.totalHp){
             run(this.hpRegenTicker)
             if(this.hpRegenTicker.tick){
-                this.hp += 5;
+                this.hp += this.hpRegen;
             }
         }
     }
@@ -123,8 +137,7 @@ function character(img, classType){
                rangeCheck(this.enemies[i].image.y, this.image.y, this.enemies[i].range)){
                   if(this.enemies[i].image.visible){
                     this.enemies[i].target = this;
-                    this.enemies[i].chase();
-                    // console.log("provoked");
+                    this.enemies[i].active();
                   }
             }
         }
@@ -175,6 +188,7 @@ function character(img, classType){
     }
 //should run the auto attack ticker
 //every tick is a hit on the enemy targets hp
+//needs a reset
     this.autoAttack = function(){
         run(this.autoAtkTicker);
         if(this.autoAtkTicker.tick){
@@ -182,6 +196,31 @@ function character(img, classType){
             if(this.target.hp <= 0){
                 this.inBattle = false;
             }
+        }
+    }
+//updates totalHp, totalMana, basic atkDmg, and xp gained
+    this.lvlMngr = function(){
+        if(this.xp >= 20 * Math.pow(1.25, this.lvl)){
+            this.xp -= 20 * Math.pow(1.25, this.lvl);
+            this.lvl++;
+        }
+        this.totalHp = 100 + (10 * this.lvl);
+        this.totalMana = 100 + (25 * (this.lvl - 1));
+        this.atkDmg = 60 + this.lvl;
+        this.atkSpeed = 0.65 + (this.lvl * 0.01);
+        this.hpRegen = 1 + (this.lvl * 0.2);
+        this.manaRegen = 1 + (this.lvl * 0.3);
+    }
+//collects
+    this.lootCollect = function(){
+        if(this.target == null){
+            this.target = this.nullTarget;
+        }
+        if(this.target.hp <= 0){
+            this.xp += this.target.xpReward;
+            this.target.xpReward = 0;
+            this.gold += this.target.goldReward;
+            this.target.goldReward = 0;
         }
     }
 }

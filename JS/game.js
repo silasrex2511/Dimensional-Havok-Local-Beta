@@ -8,7 +8,7 @@ var lvl = 1;
 
 
 var copy = new imageData(0,0,64,64,"./res/chars/alfred.png");
-var enemy = new enemy(copy,500,200,5,2,.7);
+var enemy = new enemy(copy,500,200,5,2,.7,8);
 var enemies = [enemy];
 player.enemies = enemies;
 var speed = 4;

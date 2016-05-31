@@ -1,12 +1,17 @@
-function enemy(img,health,range,atkDmg,speed,atkSpd){
+function enemy(img,health,range,atkDmg,speed,atkSpd,xp,gold){
     this.totalHp = health
     this.hp = this.totalHp;
     this.image = img;
     this.range = range;
     this.atkDmg = atkDmg;
     this.speed = speed;
+    this.xpDefault = xp;
+    this.xpReward = xp;
+    this.goldDefault = gold;
+    this.goldReward = gold;
     this.inBattle = false;
     this.atRest = false;
+    this.provoked = false;
     this.a0 = 0;
     this.r0 = 0;
     this.attackTicker = new ticker(this.a0, 60 * atkSpd, 3000);
@@ -20,11 +25,17 @@ function enemy(img,health,range,atkDmg,speed,atkSpd){
     this.yDelta;
     this.regulate = function(){
         if(this.hp > 0){
+            if(this.provoked){
+                this.chase();
+            }
             if(this.inBattle){
                 this.autoAttack();
             }
         }
         this.aliveOrDead();
+    }
+    this.active = function(){
+        this.provoked = true;
     }
     this.chase = function(){
         this.xi = this.image.x + this.image.width / 2;
@@ -42,6 +53,7 @@ function enemy(img,health,range,atkDmg,speed,atkSpd){
             this.inBattle = true;
         }else{
             this.inBattle = false;
+            this.provoked = false;
         }
     }
     this.autoAttack = function(){
@@ -66,6 +78,9 @@ function enemy(img,health,range,atkDmg,speed,atkSpd){
             if(this.reviveTimer.tick){
                 this.image.visible = true;
                 this.hp = this.totalHp;
+                this.inBattle = false;
+                this.xpReward = this.xpDefault;
+                this.goldReward = this.goldDefault;
             }
         }
     }
