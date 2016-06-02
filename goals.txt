@@ -9,7 +9,13 @@ GOALS TO BE COMPLETED:          ||    ARTISTS GOALS TO BE DONE
 -mini-map                       ||    -collectables
   *rescale of entire map        ||      *animations
   *accurate scrolling           ||      *items
--realtime play                  ||      *mana/hp suppliment
+-Menus                          ||      *mana/hp suppliment
+  *player stats                 ||
+  *class/skill selects          ||
+  *inventory                    ||
+  *shops                        ||
+  *trading                      ||
+-realtime play                  ||
   *make better HavokServer      ||
 -online                         ||
   *launch game beta             ||

@@ -1,10 +1,9 @@
-
+//***************************************************************//
+//******************|||||||||||||||||||||||**********************//
+//------------------NEEDS A LITTLE CLEAN UP----------------------//
+//******************|||||||||||||||||||||||**********************//
+//***************************************************************//
 //this will handle everything dealing with the player
-var path = new line(0,0,0,0);
-var player = new character("./res/chars/alfred.png", mage);
-var playerRightClick = new point();
-var targetClick = new point();
-var pathEnd = new point();
 //gets x and y of mouse click
 c.addEventListener('contextmenu', function(evt) {
     evt.preventDefault();
@@ -37,9 +36,12 @@ function character(img, classType){
     this.xp = 0;
     this.atkDmg = 60;
     this.atkSpeed = .65;
+    this.speed = 4;
     this.range = 300;
     this.target;
     this.inBattle = false;
+    this.lvlUpBonus = false;
+    this.gameStateStandby = false;
     this.a0 = 0;
     this.image = new imageData(400-32,300-32,64,64,img);
     this.manaRegenTicker = new ticker(this.manaLow, 30, 3000);
@@ -48,19 +50,17 @@ function character(img, classType){
     this.enemies = [];
     this.nullTarget = new enemy(new rectMngr(0,0,0,0,"transparent"),0,0,0,0,0,0,0)
 //Shows Status
-    this.statDisplay = function(){
-        var underlay = new rectMngr(5,5,300,100,"rgba(50,50,50,.7)","underlay");
-        var hpBarMask = new rectMngr(100,10,200,15,"black","hpMask");
-        var hpBar = new rectMngr(100,10,200 * (this.hp / this.totalHp),15,"red","hpBar");
-        var mpBarMask = new rectMngr(100,30,200,15,"black","mpMask");
-        var mpBar = new rectMngr(100,30,200 * (this.mana / this.totalMana),15,"blue","mpBar");
-        var xpBarMask = new rectMngr(c.width/2 - 70 * 4 / 2 , 590, 70 * 4, 10, "gray");
-        var xpBar = new rectMngr(260,590,280 * (this.xp / (20 * Math.pow(1.25, this.lvl))),8,"green","xpBar");
-        var bars = [underlay, hpBarMask, hpBar, mpBarMask, mpBar, xpBarMask, xpBar];
+    this.playerInterface = function(){
+        hpBar.width = 200 * (player.hp / player.totalHp);
+        mpBar.width = 200 * (player.mana / player.totalMana);
+        xpBar.width = 280 * (player.xp / Math.round(20 * Math.pow(1.25, player.lvl)));
         itemsShow(bars);
         drawString(Math.round(this.hp), "12px Tahoma", 100, 22, "white");
         drawString(Math.round(this.mana), "12px Tahoma", 100, 42, "white");
-        drawString("XP: " + player.xp + "/" + Math.round(20 * Math.pow(1.25, this.lvl)), "12px Tahoma", 100, 57, "white");
+        drawString("XP: " + this.xp + "/" + Math.round(20 * Math.pow(1.25, this.lvl)), "12px Tahoma", 100, 57, "white");
+        this.displayMiniMap();
+        this.menuDisplay();
+
     }
 //Runs Necessary functions in game.js in update()
     this.regulate = function(){
@@ -78,19 +78,21 @@ function character(img, classType){
         }
         this.provoke();
         this.regen();
-        this.targetSelect();
-        this.displayMiniMap();
-        this.rightClick();
+        if(!this.gameStateStandby){
+            this.targetSelect();
+            this.rightClick();
+        }
         if(this.inBattle){
             this.autoAttack();
+            this.lootCollect();
         }
-        this.lootCollect();
+
         this.lvlMngr();
     };
 //manages what the right click does
 //auto attack, movement, selects target
     this.rightClick = function(){
-        var moving = moveTo(player.image,pathEnd.x,pathEnd.y,speed,path,havok);
+        var moving = this.moveTo(pathEnd.x,pathEnd.y,player.speed,path,havok);
         for(var i = 0; i < this.enemies.length; i++){
             if(collisionCheck(this.enemies[i].image,playerRightClick)
               && this.enemies[i].image.visible){
@@ -164,22 +166,21 @@ function character(img, classType){
     }
 //shows a minified version of aproximation of enemies
     this.displayMiniMap = function(){
-        var miniMapDisplay;
-        var underlay = new rectMngr(c.width-150,0,150,150,"rgba(40,40,40,.5)","map");
-        var playerIndicator = new circleMngr(c.width-75,75,2,"rgba(0,255,0,.5)","rgba(0,255,0,.5)",2,"playerDot");
-        miniMapDisplay = [underlay,playerIndicator]
         for(var i = 0; i < this.enemies.length; i++){
             var nme = this.enemies[i].image;
             var x = (nme.x - this.image.x) / 10 + playerIndicator.x;
             var y = (nme.y - this.image.y) / 10 + playerIndicator.y;
-            miniMapDisplay[miniMapDisplay.length] = new rectMngr(x,y,4,4,"rgba(255,0,0,.6)","enemy");
-            if(nme.visible){
-                miniMapDisplay[miniMapDisplay.length - 1].visible = false;
+            miniMapDisplay[2 + i].x = x;
+            miniMapDisplay[2 + i].y = y;
+            if(!this.enemies[i].image.visible){
+                miniMapDisplay[2 + i].visible = false;
             }
         }
-        for(var i = 0; i < miniMapDisplay.length; i++){
-            if(collisionCheck(miniMapDisplay[i],underlay)){
-                miniMapDisplay[i].visible = true;
+        for(var i = 2; i < miniMapDisplay.length; i++){
+            if(collisionCheck(miniMapDisplay[i],miniMapUnderlay)){
+                if(this.enemies[i-2].image.visible){
+                    miniMapDisplay[i].visible = true;
+                }
             }else{
                 miniMapDisplay[i].visible = false;
             }
@@ -193,16 +194,14 @@ function character(img, classType){
         run(this.autoAtkTicker);
         if(this.autoAtkTicker.tick){
             this.target.hp -= this.atkDmg;
-            if(this.target.hp <= 0){
-                this.inBattle = false;
-            }
         }
     }
 //updates totalHp, totalMana, basic atkDmg, and xp gained
     this.lvlMngr = function(){
-        if(this.xp >= 20 * Math.pow(1.25, this.lvl)){
-            this.xp -= 20 * Math.pow(1.25, this.lvl);
+        if(this.xp >= Math.round(20 * Math.pow(1.25, this.lvl))){
+            this.xp -= Math.round(20 * Math.pow(1.25, this.lvl));
             this.lvl++;
+            this.lvlUpBonus = true;
         }
         this.totalHp = 100 + (10 * this.lvl);
         this.totalMana = 100 + (25 * (this.lvl - 1));
@@ -210,6 +209,21 @@ function character(img, classType){
         this.atkSpeed = 0.65 + (this.lvl * 0.01);
         this.hpRegen = 1 + (this.lvl * 0.2);
         this.manaRegen = 1 + (this.lvl * 0.3);
+        if(this.lvlUpBonus){
+            if(this.hp < this.totalHp){
+                this.hp += Math.round(0.25 * this.totalHp);
+                if(this.hp > this.totalHp){
+                    this.hp = this.totalHp;
+                }
+            }
+            if(this.mana < this.totalMana){
+                this.mana += Math.round(0.25 * this.totalMana);
+                if(this.mana > this.totalMana){
+                    this.mana = this.totalMana;
+                }
+            }
+            this.lvlUpBonus = false;
+        }
     }
 //collects
     this.lootCollect = function(){
@@ -221,6 +235,69 @@ function character(img, classType){
             this.target.xpReward = 0;
             this.gold += this.target.goldReward;
             this.target.goldReward = 0;
+            this.inBattle = false;
+            this.target = this.nullTarget;
+        }
+    }
+    //will display other menues of the game
+    // these menues are accessible at all times
+    this.menuDisplay = function(){
+        itemsShow(menuButtons);
+        // if(collisionCheck(targetClick,inventory)){
+        //
+        // }
+    }
+    //adds class stats to your player stats
+    this.classEquipped = function(){
+    }
+    this.moveTo = function(newX, newY, speed, line, game){
+        var arrayL = game.map.mapWidth * game.map.mapHeight;
+
+        line.xi = c.width/2;
+        line.yi = c.height/2;
+        line.yf = newY;
+        line.xf = newX;
+
+        line.xDelta = line.xf - line.xi;
+        line.yDelta = line.yf - line.yi;
+        line.lineLength = Math.sqrt(Math.pow(line.xDelta,2) + Math.pow(line.yDelta,2));
+
+        //>>> will only scroll the map
+        if(line.xi != line.xf){
+            if(Math.abs(line.xDelta) > speed){
+                for(var i = 0; i < arrayL; i++){
+                    game.map.map[i].x -= (line.xDelta / line.lineLength * speed);
+                }
+                line.xf -= (line.xDelta / line.lineLength * speed);
+            }
+        }
+        if(line.yi != line.yf){
+            if(Math.abs(line.yDelta) > speed){
+                for(var i = 0; i < arrayL; i++){
+                    game.map.map[i].y -= (line.yDelta / line.lineLength * speed);
+                }
+                line.yf -= (line.yDelta / line.lineLength * speed);
+            }
+        }
+        //>>> will move objects along with map
+        var objectLength = game.objects.length;
+        if(line.xi != line.xf){
+            if(Math.abs(line.xDelta) > speed){
+                for(var i = 0; i < objectLength; i++){
+                    game.objects[i].x -= (line.xDelta / line.lineLength * speed);
+                }
+            }
+        }
+        if(line.yi != line.yf){
+            if(Math.abs(line.yDelta) > speed){
+                for(var i = 0; i < objectLength; i++){
+                    game.objects[i].y -= (line.yDelta / line.lineLength * speed);
+                }
+            }
+        }
+        return{
+            lineXF: line.xf,
+            lineYF: line.yf
         }
     }
 }

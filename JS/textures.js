@@ -1,5 +1,5 @@
 //for entering the intro to the game
-var texturePack1 = [
+var world1Tex = [
     "./res/textures/normal/grass.png",
     "./res/textures/normal/grass1.png",
     "./res/textures/normal/grass2.png",

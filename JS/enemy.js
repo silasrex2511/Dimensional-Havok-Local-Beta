@@ -5,6 +5,7 @@ function enemy(img,health,range,atkDmg,speed,atkSpd,xp,gold){
     this.range = range;
     this.atkDmg = atkDmg;
     this.speed = speed;
+    this.atkSpeed = atkSpd
     this.xpDefault = xp;
     this.xpReward = xp;
     this.goldDefault = gold;
@@ -14,7 +15,7 @@ function enemy(img,health,range,atkDmg,speed,atkSpd,xp,gold){
     this.provoked = false;
     this.a0 = 0;
     this.r0 = 0;
-    this.attackTicker = new ticker(this.a0, 60 * atkSpd, 3000);
+    this.attackTicker = new ticker(this.a0, Math.round(60 / this.atkSpeed), 3000);
     this.reviveTimer = new ticker(this.r0, 60 * 5, 300);
     this.target;
     this.xi;
